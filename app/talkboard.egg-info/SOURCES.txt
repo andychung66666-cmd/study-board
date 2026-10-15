@@ -1,0 +1,6 @@
+pyproject.toml
+talkboard.egg-info/PKG-INFO
+talkboard.egg-info/SOURCES.txt
+talkboard.egg-info/dependency_links.txt
+talkboard.egg-info/requires.txt
+talkboard.egg-info/top_level.txt
