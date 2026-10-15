@@ -6,7 +6,7 @@ from talkboard.server import create_app
 
 
 def test_health_route_reports_ok(tmp_path):
-    client = TestClient(create_app(Settings(data_dir=tmp_path)))
+    client = TestClient(create_app(Settings(data_dir=tmp_path)), base_url="http://127.0.0.1:8765")
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"ok": True}

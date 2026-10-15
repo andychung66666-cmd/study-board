@@ -1,8 +1,11 @@
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
 
 from talkboard.config import Settings
@@ -22,6 +25,18 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.settings = settings
     app.state.db = Database(settings.data_dir / "talkboard.sqlite")
     app.state.storage = TalkStorage(settings.data_dir)
+
+    # No login, so the app must not answer pages on other sites. The Host check
+    # blocks DNS rebinding; the Origin check blocks cross-site writes.
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
+
+    @app.middleware("http")
+    async def refuse_cross_site_writes(request: Request, call_next):
+        origin = request.headers.get("origin")
+        if origin is not None and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            if urlsplit(origin).hostname not in settings.allowed_hosts:
+                return JSONResponse({"detail": "Cross-site request refused"}, status_code=403)
+        return await call_next(request)
 
     def recording_talk(talk_id: int):
         talk = app.state.db.get_talk(talk_id)

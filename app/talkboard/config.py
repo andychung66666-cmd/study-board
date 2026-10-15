@@ -16,6 +16,7 @@ class Settings:
     ollama_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:14b-instruct"
     claude_model: str = "claude-sonnet-5-5"
+    allowed_hosts: tuple[str, ...] = ("127.0.0.1", "localhost")
 
 
 def load_settings(config_file: Path) -> Settings:
@@ -33,4 +34,6 @@ def load_settings(config_file: Path) -> Settings:
         raise ConfigError(f"Unknown setting(s): {', '.join(sorted(unknown))}")
     if "data_dir" in values:
         values["data_dir"] = Path(values["data_dir"])
+    if "allowed_hosts" in values:
+        values["allowed_hosts"] = tuple(values["allowed_hosts"])
     return Settings(**values)
