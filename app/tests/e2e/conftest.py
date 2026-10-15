@@ -29,7 +29,7 @@ def free_port() -> int:
 
 @pytest.fixture
 def live_server(tmp_path):
-    app = create_app(Settings(data_dir=tmp_path))
+    app = create_app(Settings(data_dir=tmp_path), start_worker=False)
     port = free_port()
     server = uvicorn.Server(
         uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")

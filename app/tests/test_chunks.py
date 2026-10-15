@@ -8,7 +8,10 @@ from talkboard.server import create_app
 
 @pytest.fixture
 def client(tmp_path):
-    return TestClient(create_app(Settings(data_dir=tmp_path)), base_url="http://127.0.0.1:8765")
+    return TestClient(
+        create_app(Settings(data_dir=tmp_path), start_worker=False),
+        base_url="http://127.0.0.1:8765",
+    )
 
 
 def start_talk(client, **overrides):

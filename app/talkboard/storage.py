@@ -51,9 +51,11 @@ class TalkStorage:
 
     def finalize(self, talk_id: int) -> Path:
         count = self._next_index(talk_id)
-        if count == 0:
-            raise NoAudio("No audio was received for this talk")
         audio = self.audio_path(talk_id)
+        if count == 0:
+            if audio.exists():  # already joined; the caller may be repeating after a crash
+                return audio
+            raise NoAudio("No audio was received for this talk")
         temp = audio.with_suffix(".tmp")
         with open(temp, "wb") as out:
             for index in range(count):

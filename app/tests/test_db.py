@@ -100,3 +100,37 @@ def test_deleting_a_talk_removes_its_segments_and_summaries(db):
     assert db.get_segments(talk.id) == []
     assert db.get_summaries(talk.id) == []
     assert [s.text for s in db.get_segments(other.id)] == ["stays"]
+
+
+def test_a_failed_talk_can_be_retried_from_the_start_or_from_summarising(db):
+    talk = new_talk(db)
+    for retry in (Status.RECORDED, Status.SUMMARISING):
+        with db.connect() as conn:
+            conn.execute("UPDATE talks SET status = 'failed', error = 'x' WHERE id = ?", (talk.id,))
+        db.set_status(talk.id, retry)
+        fetched = db.get_talk(talk.id)
+        assert fetched.status is retry
+        assert fetched.error is None
+
+
+def test_a_failed_talk_cannot_jump_straight_to_done(db):
+    talk = new_talk(db)
+    with db.connect() as conn:
+        conn.execute("UPDATE talks SET status = 'failed' WHERE id = ?", (talk.id,))
+    with pytest.raises(InvalidTransition):
+        db.set_status(talk.id, Status.DONE)
+
+
+def test_clearing_segments_removes_only_that_talks_lines(db):
+    first, second = new_talk(db), new_talk(db)
+    db.add_segments(first.id, [(0.0, 1.0, "a")])
+    db.add_segments(second.id, [(0.0, 1.0, "b")])
+    db.clear_segments(first.id)
+    assert db.get_segments(first.id) == []
+    assert [s.text for s in db.get_segments(second.id)] == ["b"]
+
+
+def test_duration_is_stored_on_the_talk(db):
+    talk = new_talk(db)
+    db.set_duration(talk.id, 123.5)
+    assert db.get_talk(talk.id).duration_s == 123.5

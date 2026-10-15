@@ -18,11 +18,13 @@ class Status(str, Enum):
     FAILED = "failed"
 
 
-FORWARD = {
-    Status.RECORDING: Status.RECORDED,
-    Status.RECORDED: Status.TRANSCRIBING,
-    Status.TRANSCRIBING: Status.SUMMARISING,
-    Status.SUMMARISING: Status.DONE,
+ALLOWED = {
+    Status.RECORDING: {Status.RECORDED},
+    Status.RECORDED: {Status.TRANSCRIBING},
+    Status.TRANSCRIBING: {Status.SUMMARISING},
+    Status.SUMMARISING: {Status.DONE},
+    # A failed talk is retried from the start, or from the summary if the transcript exists.
+    Status.FAILED: {Status.RECORDED, Status.SUMMARISING},
 }
 
 
@@ -157,7 +159,7 @@ class Database:
                 raise KeyError(talk_id)
             current = Status(row["status"])
             allowed = status is Status.FAILED and current is not Status.DONE
-            allowed = allowed or FORWARD.get(current) is status
+            allowed = allowed or status in ALLOWED.get(current, set())
             if not allowed:
                 raise InvalidTransition(f"{current.value} -> {status.value}")
             conn.execute(
@@ -168,6 +170,14 @@ class Database:
     def set_audio_path(self, talk_id: int, audio_path: str) -> None:
         with self.connect() as conn:
             conn.execute("UPDATE talks SET audio_path = ? WHERE id = ?", (audio_path, talk_id))
+
+    def set_duration(self, talk_id: int, duration_s: float) -> None:
+        with self.connect() as conn:
+            conn.execute("UPDATE talks SET duration_s = ? WHERE id = ?", (duration_s, talk_id))
+
+    def clear_segments(self, talk_id: int) -> None:
+        with self.connect() as conn:
+            conn.execute("DELETE FROM segments WHERE talk_id = ?", (talk_id,))
 
     def add_segments(self, talk_id: int, segments: list[tuple[float, float, str]]) -> None:
         with self.connect() as conn:
