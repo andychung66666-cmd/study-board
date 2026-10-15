@@ -1,0 +1,21 @@
+[project]
+name = "talkboard"
+version = "0.1.0"
+description = "Local talk recorder, transcriber and summariser"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx2>=2", "playwright>=1.45"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["mac: needs the owner's Mac (Apple chip, real Whisper/Ollama/audio)"]
+addopts = "-m 'not mac'"
+
+[tool.setuptools]
+packages = ["talkboard"]
