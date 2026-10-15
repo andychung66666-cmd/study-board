@@ -7,3 +7,11 @@ fieldset label { margin: .25rem 0; }
 button { padding: .5rem 1rem; font-size: 1rem; }
 .warning { background: #fff3cd; padding: .5rem; border-radius: 4px; }
 .error { background: #f8d7da; padding: .5rem; border-radius: 4px; }
+nav { margin-bottom: 1rem; }
+#talks { list-style: none; padding: 0; }
+.talk { padding: .5rem 0; border-bottom: 1px solid #ddd; }
+.meta { color: #666; }
+.line { margin: .25rem 0; }
+.time { color: #666; font-variant-numeric: tabular-nums; }
+.status-failed { color: #b00020; }
+audio { width: 100%; margin: 1rem 0; }

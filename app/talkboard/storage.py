@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 
 
@@ -64,3 +65,11 @@ class TalkStorage:
         for index in range(count):
             self._part(talk_id, index).unlink()
         return audio
+
+    def idle_seconds(self, talk_id: int) -> float | None:
+        """Seconds since this talk's newest file was written, or None if it has none."""
+        folder = self.talk_dir(talk_id)
+        if not folder.exists():
+            return None
+        times = [path.stat().st_mtime for path in folder.iterdir()]
+        return time.time() - max(times) if times else None

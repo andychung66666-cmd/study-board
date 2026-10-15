@@ -3,7 +3,7 @@ from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
@@ -45,6 +45,24 @@ def create_app(
                 return JSONResponse({"detail": "Cross-site request refused"}, status_code=403)
         return await call_next(request)
 
+    def talk_row(talk) -> dict:
+        return {
+            "id": talk.id,
+            "title": talk.title,
+            "created_at": talk.created_at,
+            "source": talk.source,
+            "language": talk.language,
+            "status": talk.status.value,
+            "duration_s": talk.duration_s,
+            "error": talk.error,
+        }
+
+    def existing_talk(talk_id: int):
+        talk = app.state.db.get_talk(talk_id)
+        if talk is None:
+            raise HTTPException(404, "Unknown talk")
+        return talk
+
     def recording_talk(talk_id: int):
         talk = app.state.db.get_talk(talk_id)
         if talk is None:
@@ -56,6 +74,39 @@ def create_app(
     @app.get("/api/health")
     def health() -> dict:
         return {"ok": True}
+
+    @app.get("/api/talks")
+    def list_talks() -> list[dict]:
+        return [talk_row(talk) for talk in app.state.db.list_talks()]
+
+    @app.get("/api/talks/{talk_id}")
+    def talk_detail(talk_id: int) -> dict:
+        talk = existing_talk(talk_id)
+        db = app.state.db
+        idle = (
+            app.state.storage.idle_seconds(talk_id) if talk.status is Status.RECORDING else None
+        )
+        return {
+            **talk_row(talk),
+            "word_list": talk.word_list,
+            "audio_url": f"/api/talks/{talk_id}/audio" if talk.audio_path else None,
+            "idle_s": idle,
+            "segments": [
+                {"start": s.start_s, "end": s.end_s, "text": s.text}
+                for s in db.get_segments(talk_id)
+            ],
+            "summaries": [
+                {"engine": s.engine, "model": s.model, "created_at": s.created_at, "body": s.body}
+                for s in db.get_summaries(talk_id)
+            ],
+        }
+
+    @app.get("/api/talks/{talk_id}/audio")
+    def talk_audio(talk_id: int) -> FileResponse:
+        talk = existing_talk(talk_id)
+        if not talk.audio_path:
+            raise HTTPException(404, "No audio for this talk yet")
+        return FileResponse(talk.audio_path, media_type="audio/webm")
 
     @app.post("/api/talks", status_code=201)
     def create_talk(body: NewTalk) -> dict:

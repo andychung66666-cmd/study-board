@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talk · Talk Summary</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <nav><a href="/">Record</a> · <a href="/library.html">Library</a></nav>
+    <h1 id="title">Talk</h1>
+    <p id="meta"></p>
+    <p>Status: <strong id="status">loading</strong></p>
+    <p id="error" class="error" hidden></p>
+    <div class="buttons">
+      <button id="retry" type="button" hidden>Retry</button>
+      <button id="recover" type="button" hidden>Recover this recording</button>
+    </div>
+    <audio id="player" controls preload="none" hidden></audio>
+    <h2>Transcript</h2>
+    <div id="transcript"></div>
+  </main>
+  <script src="/format.js"></script>
+  <script src="/talk.js"></script>
+</body>
+</html>
