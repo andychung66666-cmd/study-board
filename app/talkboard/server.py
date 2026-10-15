@@ -1,6 +1,8 @@
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from talkboard.config import Settings
@@ -60,4 +62,7 @@ def create_app(settings: Settings) -> FastAPI:
         app.state.db.set_status(talk_id, Status.RECORDED)
         return {"id": talk_id, "status": Status.RECORDED.value}
 
+    app.mount(
+        "/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static"
+    )
     return app

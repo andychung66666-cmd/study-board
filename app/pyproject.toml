@@ -19,3 +19,6 @@ addopts = "-m 'not mac'"
 
 [tool.setuptools]
 packages = ["talkboard"]
+
+[tool.setuptools.package-data]
+talkboard = ["static/*"]

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talk Summary</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <h1>Record a talk</h1>
+
+    <form id="setup" onsubmit="return false">
+      <label>Title <input id="title" type="text" placeholder="Untitled talk"></label>
+
+      <fieldset>
+        <legend>Audio source</legend>
+        <label><input type="radio" name="source" value="mic" checked> Microphone (in a room)</label>
+        <label><input type="radio" name="source" value="tab"> Chrome tab (Meet, Zoom in browser)</label>
+      </fieldset>
+
+      <label>Language
+        <select id="language">
+          <option value="auto">Auto-detect</option>
+          <option value="yue">Cantonese</option>
+          <option value="zh">Mandarin</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+
+      <label>Word list (names, companies, jargon)
+        <textarea id="word-list" rows="2" placeholder="OpenAI, Anthropic, ..."></textarea>
+      </label>
+
+      <div class="buttons">
+        <button id="start" type="button">Start recording</button>
+        <button id="stop" type="button" disabled>Stop</button>
+      </div>
+    </form>
+
+    <section id="live" aria-live="polite">
+      <p><strong id="status">Idle</strong> <span id="timer">00:00</span></p>
+      <p>Audio level <meter id="level" min="0" max="1" value="0"></meter></p>
+      <p>Chunks uploaded: <span id="chunks-uploaded">0</span></p>
+      <p id="warning" class="warning" hidden></p>
+      <p id="error" class="error" hidden></p>
+    </section>
+  </main>
+  <script src="/recorder.js"></script>
+</body>
+</html>
