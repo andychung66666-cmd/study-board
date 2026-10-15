@@ -165,6 +165,10 @@ class Database:
                 (status.value, error, talk_id),
             )
 
+    def set_audio_path(self, talk_id: int, audio_path: str) -> None:
+        with self.connect() as conn:
+            conn.execute("UPDATE talks SET audio_path = ? WHERE id = ?", (audio_path, talk_id))
+
     def add_segments(self, talk_id: int, segments: list[tuple[float, float, str]]) -> None:
         with self.connect() as conn:
             conn.executemany(
