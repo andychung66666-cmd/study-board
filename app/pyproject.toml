@@ -7,9 +7,11 @@ dependencies = [
   "fastapi>=0.115",
   "uvicorn>=0.30",
   "python-multipart>=0.0.9",
+  "opencc-python-reimplemented>=0.1.7",
 ]
 
 [project.optional-dependencies]
+mac = ["mlx-whisper>=0.4"]
 dev = ["pytest>=8", "httpx2>=2", "playwright>=1.45"]
 
 [tool.pytest.ini_options]

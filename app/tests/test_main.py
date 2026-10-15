@@ -23,3 +23,15 @@ def test_launcher_without_a_config_file_uses_defaults(tmp_path, monkeypatch):
     launcher.main()
 
     assert calls == [{"host": "127.0.0.1", "port": 8765}]
+
+
+def test_launcher_wires_the_whisper_model_from_the_config(tmp_path, monkeypatch):
+    (tmp_path / "talkboard.toml").write_text(f'whisper_model = "custom/whisper"\ndata_dir = "{tmp_path}/data"\n')
+    monkeypatch.chdir(tmp_path)
+    apps = []
+    monkeypatch.setattr(launcher.uvicorn, "run", lambda app, **kwargs: apps.append(app))
+
+    launcher.main()
+
+    transcriber = apps[0].state.runner.transcriber
+    assert transcriber.model == "custom/whisper"
